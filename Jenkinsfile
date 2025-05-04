@@ -16,8 +16,19 @@ pipeline {
 
         stage('SAST Analysis') {
             steps {
-                bandit -r . -f xml -o bandit-output.xml
+                // Jalankan Bandit dan simpan hasilnya dalam format XML
+                sh 'bandit -r . -f xml -o bandit.xml'
+
+                // Tampilkan isi file sebagai debug (opsional)
+                sh 'cat bandit.xml'
             }
+        }
+    }
+
+    post {
+        always {
+            // Konfigurasi agar Jenkins membaca hasil dari bandit.xml
+            recordIssues(tools: [bandit(pattern: 'bandit.xml')])
         }
     }
 }
