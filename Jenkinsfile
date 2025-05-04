@@ -1,39 +1,25 @@
 pipeline {
     agent any
-
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git 'https://github.com/syifaamdh/sast-demo-app.git'
             }
         }
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'pip install bandit'
-            }
-        }
-
-        stage('SAST Analysis') {
-            steps {
-                sh 'bandit -r app.py -f xml -o bandit.xml'
-            }
-        }
-
-        stage('Post Build') {
+        stage('Static Analysis with Bandit') {
             steps {
                 script {
-                    if (fileExists('bandit.xml')) {
-                        echo 'File bandit.xml found. Displaying contents:'
-                        sh 'cat bandit.xml'
-                    }
+                    sh 'bandit -r app.py -f xml -o bandit.xml'
                 }
             }
         }
-
-        stage('Archive Artifacts') {
+        stage('Publish Bandit Results') {
             steps {
-                archiveArtifacts 'bandit.xml'
+                // Menampilkan hasil analisis
+                recordIssues(
+                    tools: [bandit(pattern: 'bandit.xml')],
+                    enableForFailure: true
+                )
             }
         }
     }
