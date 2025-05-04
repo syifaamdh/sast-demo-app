@@ -16,6 +16,8 @@ pipeline {
 
         stage('SAST Analysis') {
             steps {
+                // Menjalankan Bandit untuk melakukan static analysis pada file Python (app.py)
+                // Output dalam format XML ke file bandit.xml
                 sh 'bandit -r app.py -f xml -o bandit.xml || true'
                 // Cek apakah bandit.xml ada
                 sh 'cat bandit.xml'
@@ -29,10 +31,19 @@ pipeline {
                     if (fileExists('bandit.xml')) {
                         // Ini untuk menggunakan plugin Warnings Next Generation
                         recordIssues(
-                            tools: [bandit(pattern: 'bandit.xml')],
-                            enabledForFailure: true
+                            tools: [bandit(pattern: 'bandit.xml')]
                         )
+                    } else {
+                        echo 'File bandit.xml tidak ditemukan.'
                     }
+                }
+            }
+            post {
+                always {
+                    // Mengarsipkan hasil bandit.xml
+                    archiveArtifacts artifacts: 'bandit.xml', allowEmptyArchive: true
+                    // Menambahkan laporan Bandit dalam Jenkins jika diperlukan
+                    junit 'bandit.xml'  // Jika format laporan sesuai dengan format JUnit XML
                 }
             }
         }
