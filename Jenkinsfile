@@ -16,7 +16,7 @@ pipeline {
 
         stage('SAST Analysis') {
             steps {
-                sh 'bandit -f xml -o bandit-output.xml -r .'
+                bandit -r . -f xml -o bandit-output.xml
             }
         }
     }
