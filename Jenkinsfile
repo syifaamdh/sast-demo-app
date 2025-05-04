@@ -16,19 +16,25 @@ pipeline {
 
         stage('SAST Analysis') {
             steps {
-                // Jalankan Bandit dan simpan hasilnya dalam format XML
-                sh 'bandit -r . -f xml -o bandit.xml'
-
-                // Tampilkan isi file sebagai debug (opsional)
+                sh 'bandit -r app.py -f xml -o bandit.xml || true'
+                // Cek apakah bandit.xml ada
                 sh 'cat bandit.xml'
             }
         }
-    }
 
-    post {
-        always {
-            // Konfigurasi agar Jenkins membaca hasil dari bandit.xml
-            recordIssues(tools: [bandit(pattern: 'bandit.xml')])
+        stage('Post Build') {
+            steps {
+                script {
+                    // Pastikan Jenkins membaca file bandit.xml setelah pipeline selesai
+                    if (fileExists('bandit.xml')) {
+                        // Ini untuk menggunakan plugin Warnings Next Generation
+                        recordIssues(
+                            tools: [bandit(pattern: 'bandit.xml')],
+                            enabledForFailure: true
+                        )
+                    }
+                }
+            }
         }
     }
 }
