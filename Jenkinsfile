@@ -4,12 +4,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Checkout repository dari GitHub
                 git 'https://github.com/syifaamdh/sast-demo-app.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
+                // Menginstal dependensi yang dibutuhkan
                 sh 'pip install bandit'
             }
         }
@@ -19,6 +21,7 @@ pipeline {
                 // Menjalankan Bandit untuk melakukan static analysis pada file Python (app.py)
                 // Output dalam format XML ke file bandit.xml
                 sh 'bandit -r app.py -f xml -o bandit.xml || true'
+                
                 // Cek apakah bandit.xml ada
                 sh 'cat bandit.xml'
             }
@@ -29,7 +32,11 @@ pipeline {
                 script {
                     // Pastikan Jenkins membaca file bandit.xml setelah pipeline selesai
                     if (fileExists('bandit.xml')) {
-                        // Ini untuk menggunakan plugin Warnings Next Generation
+                        // Jika ingin menampilkan file XML
+                        echo "File bandit.xml ditemukan. Menampilkan isi file:"
+                        sh 'cat bandit.xml'
+                        
+                        // Menggunakan plugin Warnings Next Generation untuk menampilkan masalah yang ditemukan
                         recordIssues(
                             tools: [bandit(pattern: 'bandit.xml')]
                         )
@@ -42,7 +49,8 @@ pipeline {
                 always {
                     // Mengarsipkan hasil bandit.xml
                     archiveArtifacts artifacts: 'bandit.xml', allowEmptyArchive: true
-                    // Menambahkan laporan Bandit dalam Jenkins jika diperlukan
+                    
+                    // Mengarsipkan file untuk debugging
                     junit 'bandit.xml'  // Jika format laporan sesuai dengan format JUnit XML
                 }
             }
