@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/syifaamdh/sast-demo-app.git'
+                checkout scm
             }
         }
 
@@ -16,9 +16,7 @@ pipeline {
 
         stage('SAST Analysis') {
             steps {
-                // Jalankan analisis Bandit dan simpan hasilnya ke bandit.xml
-                sh 'bandit -r app.py -f xml -o bandit.xml || true'
-                sh 'cat bandit.xml'  // Menampilkan isi bandit.xml di Jenkins console
+                sh 'bandit -r app.py -f xml -o bandit.xml'
             }
         }
 
@@ -26,23 +24,16 @@ pipeline {
             steps {
                 script {
                     if (fileExists('bandit.xml')) {
-                        echo "File bandit.xml ditemukan. Menampilkan isi file:"
+                        echo 'File bandit.xml found. Displaying contents:'
                         sh 'cat bandit.xml'
-                        
-                        // Menampilkan issues menggunakan Warnings Next Generation
-                        recordIssues(
-                            tools: [bandit(pattern: 'bandit.xml')]
-                        )
-                    } else {
-                        echo 'File bandit.xml tidak ditemukan.'
                     }
                 }
             }
-            post {
-                always {
-                    // Mengarsipkan hasil bandit.xml
-                    archiveArtifacts artifacts: 'bandit.xml', allowEmptyArchive: true
-                }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts 'bandit.xml'
             }
         }
     }
