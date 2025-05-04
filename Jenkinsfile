@@ -16,8 +16,9 @@ pipeline {
 
         stage('SAST Analysis') {
             steps {
+                // Jalankan analisis Bandit dan simpan hasilnya ke bandit.xml
                 sh 'bandit -r app.py -f xml -o bandit.xml || true'
-                sh 'cat bandit.xml'
+                sh 'cat bandit.xml'  // Menampilkan isi bandit.xml di Jenkins console
             }
         }
 
@@ -28,7 +29,7 @@ pipeline {
                         echo "File bandit.xml ditemukan. Menampilkan isi file:"
                         sh 'cat bandit.xml'
                         
-                        // Menggunakan plugin Warnings Next Generation untuk mengolah hasil analisis Bandit
+                        // Menampilkan issues menggunakan Warnings Next Generation
                         recordIssues(
                             tools: [bandit(pattern: 'bandit.xml')]
                         )
@@ -39,6 +40,7 @@ pipeline {
             }
             post {
                 always {
+                    // Mengarsipkan hasil bandit.xml
                     archiveArtifacts artifacts: 'bandit.xml', allowEmptyArchive: true
                 }
             }
