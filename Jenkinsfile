@@ -3,23 +3,18 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/syifaamdh/sast-demo-app.git'
+                git url: 'https://github.com/syifaamdh/sast-demo-app.git', branch: 'master'
             }
         }
-        stage('Static Analysis with Bandit') {
+        stage('Install Dependencies') {
             steps {
-                script {
-                    sh 'bandit -r app.py -f xml -o bandit.xml'
-                }
+                sh 'pip install --user bandit'
             }
         }
-        stage('Publish Bandit Results') {
+        stage('SAST Analysis') {
             steps {
-                // Menampilkan hasil analisis
-                recordIssues(
-                    tools: [bandit(pattern: 'bandit.xml')],
-                    enableForFailure: true
-                )
+                sh 'bandit -f xml -o bandit-output.xml -r . || true'
+                recordIssues tools: [bandit(pattern: 'bandit-output.xml')], enabledForFailure: true
             }
         }
     }
