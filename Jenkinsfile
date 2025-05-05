@@ -11,10 +11,9 @@ pipeline {
                 sh 'pip install --user bandit'
             }
         }
-        stage('SAST Analysis') {
+       stage('SAST Analysis') {
             steps {
-                sh 'bandit -f xml -o bandit-output.xml -r . || true'
-                recordIssues tools: [bandit(pattern: 'bandit-output.xml')], enabledForFailure: true
+                 sh 'bandit -f xml -o bandit-output.xml -r .'
             }
         }
     }
