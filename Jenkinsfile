@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/syifaamdh/sast-demo-app.git', branch: 'master'
+                git url: 'https://github.com/syifaamdh/sast-demo-app.git', branch: 'main'
             }
         }
         stage('Install Dependencies') {
